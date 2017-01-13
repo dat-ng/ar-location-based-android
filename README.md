@@ -7,6 +7,7 @@ We will convert the GPS coordinate (Latitude, Longitude, Altitude) to Navigation
 
 ### GPS coordinate to Navigation coordinate
 There are two steps:
+
 1. Convert GPS coordinate to ECEF coordinate (Earth-centered Earth-fixed coordinate): 
 2. Convert ECEF coordinate to Navigation coordinate
 
