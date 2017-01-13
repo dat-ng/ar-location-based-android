@@ -14,3 +14,15 @@ There are two steps:
 [Here is PDF file about convert GPS coordinate to Navigation coordinate.](http://digext6.defence.gov.au/dspace/bitstream/1947/3538/1/DSTO-TN-0432.pdf)
 
 ###ENU coordinate to Camera coordinate
+
+To convert ENU coordinate to Camera coordinate, we will multiply camera projection matrix with ENU coordinate vector, the result is a vector [v0, v1, v2, v3].
+
+Then x = (0.5 + v0 / v3) * widthOfCameraView and y = (0.5 - v1 / v3) * heightOfCameraView.
+
+ENU coordinate vector: [n -e u 1]
+
+Camera projection matrix is result of Original camera projection matrix and Rotation matrix multiplying
+Original camera projection matrix: 
+(https://axonvibe.atlassian.net/wiki/download/attachments/90996741/perspMatrix.png?version=1&modificationDate=1474879640541&cacheVersion=1&api=v2)
+
+Rotation matrix: you can get this value by using Android sensors
