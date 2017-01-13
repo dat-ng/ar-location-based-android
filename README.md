@@ -23,6 +23,6 @@ ENU coordinate vector: [n -e u 1]
 
 Camera projection matrix is result of Original camera projection matrix and Rotation matrix multiplying
 Original camera projection matrix: 
-(https://axonvibe.atlassian.net/wiki/download/attachments/90996741/perspMatrix.png?version=1&modificationDate=1474879640541&cacheVersion=1&api=v2)
+
 
 Rotation matrix: you can get this value by using Android sensors
