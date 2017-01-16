@@ -9,10 +9,13 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
+import android.location.LocationManager;
 import android.opengl.Matrix;
 import android.os.Build;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -21,6 +24,7 @@ import android.widget.Toast;
 
 public class ARActivity extends AppCompatActivity implements SensorEventListener, LocationListener {
 
+    final static String TAG = "ARActivity";
     private SurfaceView surfaceView;
     private FrameLayout cameraContainerLayout;
     private AROverlayView arOverlayView;
@@ -30,6 +34,16 @@ public class ARActivity extends AppCompatActivity implements SensorEventListener
 
     private SensorManager sensorManager;
     private final static int REQUEST_CAMERA_PERMISSIONS_CODE = 11;
+    public static final int REQUEST_LOCATION_PERMISSIONS_CODE = 0;
+
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 0; // 10 meters
+    private static final long MIN_TIME_BW_UPDATES = 0;//1000 * 60 * 1; // 1 minute
+
+    private LocationManager locationManager;
+    public Location location;
+    boolean isGPSEnabled;
+    boolean isNetworkEnabled;
+    boolean locationServiceAvailable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +60,7 @@ public class ARActivity extends AppCompatActivity implements SensorEventListener
     @Override
     public void onResume() {
         super.onResume();
+        requestLocationPermission();
         requestCameraPermission();
         registerSensors();
         initAROverlayView();
@@ -63,6 +78,15 @@ public class ARActivity extends AppCompatActivity implements SensorEventListener
             this.requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSIONS_CODE);
         } else {
             initARCameraView();
+        }
+    }
+
+    public void requestLocationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_PERMISSIONS_CODE);
+        } else {
+            initLocationService();
         }
     }
 
@@ -147,14 +171,64 @@ public class ARActivity extends AppCompatActivity implements SensorEventListener
         //do nothing
     }
 
+    private void initLocationService() {
+
+        if ( Build.VERSION.SDK_INT >= 23 &&
+                ContextCompat.checkSelfPermission( this, android.Manifest.permission.ACCESS_FINE_LOCATION ) != PackageManager.PERMISSION_GRANTED) {
+            return  ;
+        }
+
+        try   {
+            this.locationManager = (LocationManager) this.getSystemService(this.LOCATION_SERVICE);
+
+            // Get GPS and network status
+            this.isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            this.isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+            if (!isNetworkEnabled && !isGPSEnabled)    {
+                // cannot get location
+                this.locationServiceAvailable = false;
+            }
+
+            this.locationServiceAvailable = true;
+
+            if (isNetworkEnabled) {
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                        MIN_TIME_BW_UPDATES,
+                        MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                if (locationManager != null)   {
+                    location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                    updateLatestLocation();
+                }
+            }
+
+            if (isGPSEnabled)  {
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                        MIN_TIME_BW_UPDATES,
+                        MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+
+                if (locationManager != null)  {
+                    location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    updateLatestLocation();
+                }
+            }
+        } catch (Exception ex)  {
+            Log.e(TAG, ex.getMessage());
+
+        }
+    }
+
+    private void updateLatestLocation() {
+        if (arOverlayView !=null) {
+            arOverlayView.updateCurrentLocation(location);
+            tvCurrentLocation.setText(String.format("lat: %s \nlon: %s \naltitude: %s \n",
+                    location.getLatitude(), location.getLongitude(), location.getAltitude()));
+        }
+    }
+
     @Override
     public void onLocationChanged(Location location) {
-        if (arOverlayView !=null)
-        {
-            arOverlayView.updateCurrentLocation(location);
-        }
-        tvCurrentLocation.setText(String.format("lat: %s \n lon: %s \n altitude: %s \n",
-                location.getLatitude(), location.getLongitude(), location.getAltitude()));
+        updateLatestLocation();
     }
 
     @Override
