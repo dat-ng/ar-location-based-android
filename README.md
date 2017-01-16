@@ -3,7 +3,7 @@ This AR app generally show where things are in the real-world by indicating wher
 
 ### Theoretical base
 **Augmented Reality** will transfer real coordinates system to camera coordinates system. In AR Location-based, the real coordinate is [Geographic coordinate system] (https://en.wikipedia.org/wiki/Geographic_coordinate_system).
-We will convert the **GPS coordinate (Latitude, Longitude, Altitude)** to Navigation coordinate **(East, North, Up)**, then transfer **Navigation coordinate** to **Camera coordinate** and display it on camera view.
+We will convert the **GPS coordinate (Latitude, Longitude, Altitude)** to **Navigation coordinate (East, North, Up)**, then transfer **Navigation coordinate** to **Camera coordinate** and display it on camera view.
 
 ### GPS coordinate to Navigation coordinate
 There are two steps:
