@@ -28,4 +28,6 @@ Original camera projection matrix:
 Rotation matrix: you can get this value by using Android sensors
 
 ### Demo
-[demo]: https://github.com/dat-ng/ar-location-based-android/blob/master/AR-Demo.png
+![alt text][demo]
+
+[demo]: https://github.com/dat-ng/ar-location-based-android/blob/master/AR-Demo.png?raw=true
