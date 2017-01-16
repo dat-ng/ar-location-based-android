@@ -24,5 +24,9 @@ ENU coordinate vector: [n -e u 1]
 Camera projection matrix is result of Original camera projection matrix and Rotation matrix multiplying
 Original camera projection matrix: 
 
+![alt text](./perspMatrix.png)
 
 Rotation matrix: you can get this value by using Android sensors
+
+### Demo
+![alt text](./AR-Demo.png)
