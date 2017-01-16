@@ -36,7 +36,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
 
     int cameraWidth;
     int cameraHeight;
-    private final static float Z_NEAR = 0.75f;
+    private final static float Z_NEAR = 0.5f;
     private final static float Z_FAR = 2000;
 
     public ARCamera(Context context, SurfaceView surfaceView) {
