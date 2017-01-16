@@ -23,7 +23,7 @@ Then x = (0.5 + v0 / v3) * widthOfCameraView and y = (0.5 - v1 / v3) * heightOfC
 
 **Camera projection matrix** is result of **Original camera projection matrix** and **Rotation matrix** multiplying
 
-**Original camera projection matrix: 
+**Original camera projection matrix:** 
 
 ![alt text](./perspMatrix.png)
 
