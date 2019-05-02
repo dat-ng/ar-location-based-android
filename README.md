@@ -31,3 +31,9 @@ Then x = (0.5 + v0 / v3) * widthOfCameraView and y = (0.5 - v1 / v3) * heightOfC
 
 ### Demo
 ![alt text](./AR-Demo.png)
+
+## Sponsors
+
+Thank you to [Balcony.io](https://www.balcony.io/) for sponsoring this sample code! 
+
+![Balconu.io](https://www.balcony.io/wp-content/uploads/2017/09/logo-red-e1505486948133.png)
