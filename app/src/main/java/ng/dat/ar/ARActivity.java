@@ -1,5 +1,8 @@
 package ng.dat.ar;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
@@ -12,15 +15,19 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.opengl.Matrix;
 import android.os.Build;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import static android.hardware.SensorManager.*;
+import static android.view.Surface.*;
+import static android.view.Surface.ROTATION_180;
+import static android.view.Surface.ROTATION_270;
 
 public class ARActivity extends AppCompatActivity implements SensorEventListener, LocationListener {
 
@@ -31,6 +38,7 @@ public class ARActivity extends AppCompatActivity implements SensorEventListener
     private Camera camera;
     private ARCamera arCamera;
     private TextView tvCurrentLocation;
+    private TextView tvBearing;
 
     private SensorManager sensorManager;
     private final static int REQUEST_CAMERA_PERMISSIONS_CODE = 11;
@@ -44,6 +52,7 @@ public class ARActivity extends AppCompatActivity implements SensorEventListener
     boolean isGPSEnabled;
     boolean isNetworkEnabled;
     boolean locationServiceAvailable;
+    private float declination;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,9 +60,10 @@ public class ARActivity extends AppCompatActivity implements SensorEventListener
         setContentView(R.layout.activity_ar);
 
         sensorManager = (SensorManager) this.getSystemService(SENSOR_SERVICE);
-        cameraContainerLayout = (FrameLayout) findViewById(R.id.camera_container_layout);
-        surfaceView = (SurfaceView) findViewById(R.id.surface_view);
-        tvCurrentLocation = (TextView) findViewById(R.id.tv_current_location);
+        cameraContainerLayout = findViewById(R.id.camera_container_layout);
+        surfaceView = findViewById(R.id.surface_view);
+        tvCurrentLocation = findViewById(R.id.tv_current_location);
+        tvBearing = findViewById(R.id.tv_bearing);
         arOverlayView = new AROverlayView(this);
     }
 
@@ -145,24 +155,51 @@ public class ARActivity extends AppCompatActivity implements SensorEventListener
     private void registerSensors() {
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
-                SensorManager.SENSOR_DELAY_FASTEST);
+                SENSOR_DELAY_FASTEST);
     }
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
             float[] rotationMatrixFromVector = new float[16];
-            float[] projectionMatrix = new float[16];
-            float[] rotatedProjectionMatrix = new float[16];
+            float[] rotationMatrix = new float[16];
+            getRotationMatrixFromVector(rotationMatrixFromVector, sensorEvent.values);
+            final int screenRotation = this.getWindowManager().getDefaultDisplay()
+                    .getRotation();
 
-            SensorManager.getRotationMatrixFromVector(rotationMatrixFromVector, sensorEvent.values);
-
-            if (arCamera != null) {
-                projectionMatrix = arCamera.getProjectionMatrix();
+            switch (screenRotation) {
+                case ROTATION_90:
+                    remapCoordinateSystem(rotationMatrixFromVector,
+                            AXIS_Y,
+                            AXIS_MINUS_X, rotationMatrix);
+                    break;
+                case ROTATION_270:
+                    remapCoordinateSystem(rotationMatrixFromVector,
+                            AXIS_MINUS_Y,
+                            AXIS_X, rotationMatrix);
+                    break;
+                case ROTATION_180:
+                    remapCoordinateSystem(rotationMatrixFromVector,
+                            AXIS_MINUS_X, AXIS_MINUS_Y,
+                            rotationMatrix);
+                    break;
+                default:
+                    remapCoordinateSystem(rotationMatrixFromVector,
+                            AXIS_X, AXIS_Y,
+                            rotationMatrix);
+                    break;
             }
 
-            Matrix.multiplyMM(rotatedProjectionMatrix, 0, projectionMatrix, 0, rotationMatrixFromVector, 0);
+            float[] projectionMatrix = arCamera.getProjectionMatrix();
+            float[] rotatedProjectionMatrix = new float[16];
+            Matrix.multiplyMM(rotatedProjectionMatrix, 0, projectionMatrix, 0, rotationMatrix, 0);
             this.arOverlayView.updateRotatedProjectionMatrix(rotatedProjectionMatrix);
+
+            //Heading
+            float[] orientation = new float[3];
+            getOrientation(rotatedProjectionMatrix, orientation);
+            double bearing = Math.toDegrees(orientation[0]) + declination;
+            tvBearing.setText(String.format("Bearing: %s", bearing));
         }
     }
 
