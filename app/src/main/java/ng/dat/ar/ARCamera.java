@@ -222,7 +222,7 @@ public class ARCamera extends ViewGroup implements SurfaceHolder.Callback {
     private void generateProjectionMatrix() {
         float ratio = 0;
 
-        if (this.cameraWidth > this.cameraHeight) {
+        if (this.cameraWidth < this.cameraHeight) {
             ratio = (float) this.cameraWidth / this.cameraHeight;
         } else {
             ratio = (float) this.cameraHeight / this.cameraWidth;
