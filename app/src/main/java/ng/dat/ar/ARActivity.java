@@ -70,8 +70,8 @@ public class ARActivity extends AppCompatActivity implements SensorEventListener
     @Override
     public void onResume() {
         super.onResume();
-        requestLocationPermission();
         requestCameraPermission();
+        requestLocationPermission();
         registerSensors();
         initAROverlayView();
     }
@@ -155,7 +155,7 @@ public class ARActivity extends AppCompatActivity implements SensorEventListener
     private void registerSensors() {
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
-                SENSOR_DELAY_FASTEST);
+                SENSOR_DELAY_NORMAL);
     }
 
     @Override
@@ -204,8 +204,10 @@ public class ARActivity extends AppCompatActivity implements SensorEventListener
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {
-        //do nothing
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        if (accuracy == SensorManager.SENSOR_STATUS_UNRELIABLE) {
+            Log.w("DeviceOrientation", "Orientation compass unreliable");
+        }
     }
 
     private void initLocationService() {
